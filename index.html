@@ -132,10 +132,10 @@
         }
         .success-msg { color: #d81b60; font-size: 22px; font-weight: bold; margin-bottom: 10px; }
         .emoji-header { font-size: 26px; margin-bottom: 5px; }
-        .button-group { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+        .button-group { display: flex; justify-content: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
         .btn {
-            border: none; border-radius: 50px; padding: 15px 25px;
-            font-size: 18px; cursor: pointer; transition: all 0.3s ease;
+            border: none; border-radius: 50px; padding: 12px 20px;
+            font-size: 16px; cursor: pointer; transition: all 0.3s ease;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-decoration: none;
             color: white; font-weight: bold; position: relative;
         }
@@ -175,7 +175,8 @@
     <canvas id="intro-canvas"></canvas>
     <svg id="photo-container" viewBox="0 0 512 512">
         <defs><clipPath id="heart-clip"><path d="M256,448l-30.164-27.411C118.136,324.214,47.36,259.948,47.36,181.164C47.36,116.89,98.112,66.136,162.386,66.136c36.726,0,72.034,17.02,93.614,44.135c21.58-27.115,56.888-44.135,93.614-44.135c64.274,0,115.026,50.754,115.026,115.028c0,78.784-70.776,143.05-178.476,239.425L256,448z"/></clipPath></defs>
-        <image href="myLove.jpeg" width="512" height="512" preserveAspectRatio="xMidYMid slice" clip-path="url(#heart-clip)" />
+        <!-- התמונה שלך ושלה בתוך התיקייה -->
+        <image href="src/myLove.jpeg" width="512" height="512" preserveAspectRatio="xMidYMid slice" clip-path="url(#heart-clip)" />
     </svg>
 </div>
 
@@ -244,15 +245,16 @@
     </div>
 </div>
 
-<!-- כרטיס 3: שאלה 3 -->
+<!-- כרטיס 3: שאלה 3 (עודכן עם המסעדות שבחרת) -->
 <div class="card-container" id="card-3">
     <div class="step-title">שאלה 3</div>
-    <div class="emoji-header">🍽️ 🥩 🍣 🍟</div>
-    <h1>באיזה מסעדה נאכל?</h1>
+    <div class="emoji-header">🍕 🍷 🍝</div>
+    <h1>באיזו מסעדה נאכל?</h1>
     <div class="button-group">
-        <button class="btn btn-yes" onclick="selectOption('food', 'lala'); nextCard(4, event)">lala🍷</button>
-        <button class="btn btn-yes" onclick="selectOption('food', 'בראנצ\'וס'); nextCard(4, event)">מוצ'ה</button>
-        <button class="btn btn-yes" onclick="selectOption('food', 'צ\'יפס'); nextCard(4, event)"></button>
+        <button class="btn btn-yes" onclick="selectOption('food', 'פבריקה (Fabica)'); nextCard(4, event)">פבריקה 🍕</button>
+        <button class="btn btn-yes" onclick="selectOption('food', 'אוסטריה (Osteria)'); nextCard(4, event)">אוסטריה 🍝</button>
+        <button class="btn btn-yes" onclick="selectOption('food', 'מוצ\'ה (MUCHA)'); nextCard(4, event)">מוצ'ה 🍷</button>
+        <button class="btn btn-yes" onclick="selectOption('food', 'להלה (LaLa)'); nextCard(4, event)">להלה ✨</button>
     </div>
 </div>
 
@@ -500,7 +502,6 @@
     function sendWhatsApp(event) {
         createHearts(event);
 
-        // הפעלת אפקט קונפטי לבבות חגיגי בסיום
         confetti({
             particleCount: 100,
             spread: 70,
@@ -559,8 +560,8 @@
         backgroundContainer.appendChild(heart);
     }
 
-    // 2. יצירת בועות הודעות ברקע (עם מסגרת לבנה, רוחב 110px)
-    const messageImages = ['bubble1.jpeg', 'bubble2.jpeg', 'bubble3.jpeg', 'bubble4.jpeg', 'bubble5.jpeg', 'bubble6.jpeg'];
+    // 2. יצירת בועות הודעות ברקע
+    const messageImages = ['src/bubble1.jpeg', 'src/bubble2.jpeg', 'src/bubble3.jpeg', 'src/bubble4.jpeg', 'src/bubble5.jpeg', 'src/bubble6.jpeg'];
     for (let i = 0; i < 8; i++) {
         const img = document.createElement('img');
         img.classList.add('message-bubble-bg');
@@ -571,8 +572,8 @@
         backgroundContainer.appendChild(img);
     }
 
-    // 3. יצירת סטיקרים ברקע (מחזוריות אקראית מושלמת)
-    const stickerImages = ['sticker1.jpeg', 'sticker2.jpeg', 'sticker3.jpeg', 'sticker4.jpeg', 'sticker5.jpeg', 'sticker6.jpeg', 'sticker7.jpeg'];
+    // 3. יצירת סטיקרים ברקע
+    const stickerImages = ['src/sticker1.jpeg', 'src/sticker2.jpeg', 'src/sticker3.jpeg', 'src/sticker4.jpeg', 'src/sticker5.jpeg', 'src/sticker6.jpeg', 'src/sticker7.jpeg'];
     const shuffledStickers = [...stickerImages].sort(() => Math.random() - 0.5);
 
     shuffledStickers.forEach((src, i) => {
@@ -702,7 +703,7 @@
         if (allArrived && !animationFinished) {
             holdTimer++;
             if (holdTimer > 160) {
-                animationFinished = true;
+                animationFinished = timeVar = true;
                 const overlay = document.getElementById('intro-overlay');
                 overlay.style.opacity = '0';
                 document.getElementById('photo-container').style.opacity = '0';
