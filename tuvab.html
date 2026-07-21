@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הזמנה מיוחדת לטו באב ❤️</title>
+    <!-- ספרייה חיצונית לאפקט קונפטי מדהים -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffeef2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ======= מסך פתיחה: התפרצות מהמרכז ======= */
+        #intro-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #050505; z-index: 100;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        #intro-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+        #photo-container {
+            position: absolute; top: 55%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 380px; height: 380px; z-index: 101;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 0 40px rgba(255, 77, 109, 0.9));
+        }
+        #photo-container.show { transform: translate(-50%, -50%) scale(1); }
+
+        /* ======= אלמנטים ברקע של האתר הראשי ======= */
+        .background-elements {
+            position: absolute; width: 100%; height: 100%;
+            top: 0; left: 0; z-index: 0; pointer-events: none; overflow: hidden;
+        }
+        .heart-bg {
+            position: absolute; color: #ffb6c1; font-size: 20px;
+            opacity: 0.6; animation: floatHearts 10s infinite linear;
+        }
+
+        /* עיצוב הודעות (צילומי מסך) - עם מסגרת לבנה */
+        .message-bubble-bg {
+            position: absolute; width: 110px; height: auto;
+            border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+            opacity: 0; border: 3px solid rgba(255, 255, 255, 0.9);
+            animation: floatMessage 14s infinite linear;
+        }
+
+        /* עיצוב סטיקרים - גדולים יותר, בלי מסגרת, אנימציה קופצנית */
+        .sticker-bg {
+            position: absolute; width: 130px; height: auto;
+            filter: drop-shadow(0 3px 10px rgba(0,0,0,0.15));
+            opacity: 0; animation: floatSticker 14s infinite ease-in-out;
+        }
+
+        /* ======= קופסאות התוכן (Pop-ups) ======= */
+        .card-container {
+            background-color: white; border-radius: 25px;
+            padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 90%; max-width: 380px; text-align: center; z-index: 10;
+            position: absolute; display: none; opacity: 0;
+            transform: scale(0.8) translateY(50px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .card-container.active { display: block; opacity: 1; transform: scale(1) translateY(0); }
+
+        /* ======= אנימציות ======= */
+        @keyframes shake {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(-6px, 0); }
+            40% { transform: translate(6px, 0); }
+            60% { transform: translate(-6px, 0); }
+            80% { transform: translate(6px, 0); }
+            100% { transform: translate(0, 0); }
+        }
+        .shake { animation: shake 0.3s ease-in-out; }
+
+        @keyframes burstHeart {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(1.4); opacity: 0; }
+        }
+        .click-heart {
+            position: absolute; font-size: 18px; pointer-events: none;
+            animation: burstHeart 0.6s ease-out forwards; z-index: 999;
+        }
+
+        @keyframes floatHearts {
+            0% { transform: translateY(105vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        @keyframes floatMessage {
+            0% { transform: translateY(105vh) rotate(-3deg); opacity: 0; }
+            15% { opacity: 0.6; }
+            85% { opacity: 0.6; }
+            100% { transform: translateY(-20vh) rotate(5deg); opacity: 0; }
+        }
+
+        @keyframes floatSticker {
+            0% { transform: translateY(105vh) rotate(0deg) scale(0.9); opacity: 0; }
+            10% { opacity: 0.8; }
+            50% { transform: translateY(50vh) rotate(5deg) scale(1.1); }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(-15vh) rotate(-5deg) scale(0.9); opacity: 0; }
+        }
+
+        /* ======= עיצוב פנימי של הכרטיסים ======= */
+        .step-title {
+            color: #ad1457; font-size: 14px; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
+        }
+        h1 { color: #d81b60; font-size: 22px; margin-bottom: 15px; }
+        p { color: #555; font-size: 16px; line-height: 1.5; }
+        .summary-box {
+            background-color: #fff0f3; border-radius: 15px; padding: 15px;
+            margin: 20px 0; border: 1px dashed #ffb3c1;
+        }
+        .summary-box p { margin: 8px 0; font-size: 16px; color: #ad1457; font-weight: bold; }
+        .error-msg {
+            color: #e53935; font-size: 15px; font-weight: bold;
+            margin-bottom: 10px; min-height: 22px; transition: all 0.3s ease;
+        }
+        .success-msg { color: #d81b60; font-size: 22px; font-weight: bold; margin-bottom: 10px; }
+        .emoji-header { font-size: 26px; margin-bottom: 5px; }
+        .button-group { display: flex; justify-content: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+        .btn {
+            border: none; border-radius: 50px; padding: 12px 20px;
+            font-size: 16px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-decoration: none;
+            color: white; font-weight: bold; position: relative;
+        }
+        .btn-yes { background-color: #d81b60; }
+        .btn-yes:hover { background-color: #ad1457; transform: translateY(-3px); }
+        .btn-no { background-color: #f48fb1; }
+        #run-btn { position: relative; z-index: 15; transition: transform 0.1s ease, left 0.1s ease, top 0.1s ease; }
+        .btn-final { background-color: #25d366; width: 100%; margin-top: 15px; }
+        .btn-final:hover { background-color: #1ebe57; }
+        .btn-retry { background-color: #78909c; width: 100%; margin-top: 10px; }
+        .btn-retry:hover { background-color: #546e7a; }
+        .code-display { display: flex; justify-content: center; gap: 10px; margin: 15px 0; direction: ltr; }
+        .code-box {
+            width: 38px; height: 45px; font-size: 22px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid #ffb3c1; border-radius: 10px;
+            background-color: #fff0f3; color: #d81b60;
+        }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 240px; margin: 0 auto; }
+        .key-btn {
+            background-color: #ffffff; border: 2px solid #ffb3c1;
+            border-radius: 12px; padding: 12px 0; font-size: 20px; font-weight: bold;
+            color: #d81b60; cursor: pointer; box-shadow: 0 3px 5px rgba(0,0,0,0.05);
+            transition: all 0.15s ease;
+        }
+        .key-btn:active { background-color: #ffeef2; transform: scale(0.95); }
+        .key-action { background-color: #ff4d6d; border: 2px solid #ff1e4d; color: white; font-size: 16px; box-shadow: 0 4px 10px rgba(255, 77, 109, 0.4); }
+        .key-action:hover { background-color: #d81b60; }
+        .key-hidden { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.2s ease, visibility 0.2s ease; }
+        .key-visible { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity 0.2s ease, visibility 0.2s ease; }
+    </style>
+</head>
+<body>
+
+<!-- מסך פתיחה -->
+<div id="intro-overlay">
+    <canvas id="intro-canvas"></canvas>
+    <svg id="photo-container" viewBox="0 0 512 512">
+        <defs><clipPath id="heart-clip"><path d="M256,448l-30.164-27.411C118.136,324.214,47.36,259.948,47.36,181.164C47.36,116.89,98.112,66.136,162.386,66.136c36.726,0,72.034,17.02,93.614,44.135c21.58-27.115,56.888-44.135,93.614-44.135c64.274,0,115.026,50.754,115.026,115.028c0,78.784-70.776,143.05-178.476,239.425L256,448z"/></clipPath></defs>
+        <!-- התמונה שלך ושלה בתוך התיקייה -->
+        <image href="src/myLove.jpeg" width="512" height="512" preserveAspectRatio="xMidYMid slice" clip-path="url(#heart-clip)" />
+    </svg>
+</div>
+
+<!-- אזור אלמנטים צפים ברקע -->
+<div class="background-elements"></div>
+
+<!-- כרטיס 0: אימות קוד -->
+<div class="card-container active" id="card-0">
+    <div class="step-title">גישה מאובטחת ❤️</div>
+    <div class="emoji-header">🔐✨</div>
+    <h1>הכניסי את קוד הכניסה לסודיות</h1>
+    <div class="error-msg" id="code-error"></div>
+    <div class="code-display">
+        <div class="code-box" id="b1"></div>
+        <div class="code-box" id="b2"></div>
+        <span style="font-size: 22px; font-weight: bold; color: #d81b60; align-self: center;">.</span>
+        <div class="code-box" id="b3"></div>
+        <div class="code-box" id="b4"></div>
+        <span style="font-size: 22px; font-weight: bold; color: #d81b60; align-self: center;">.</span>
+        <div class="code-box" id="b5"></div>
+        <div class="code-box" id="b6"></div>
+    </div>
+    <div class="keypad">
+        <button class="key-btn" onclick="pressKey('1', event)">1</button>
+        <button class="key-btn" onclick="pressKey('2', event)">2</button>
+        <button class="key-btn" onclick="pressKey('3', event)">3</button>
+        <button class="key-btn" onclick="pressKey('4', event)">4</button>
+        <button class="key-btn" onclick="pressKey('5', event)">5</button>
+        <button class="key-btn" onclick="pressKey('6', event)">6</button>
+        <button class="key-btn" onclick="pressKey('7', event)">7</button>
+        <button class="key-btn" onclick="pressKey('8', event)">8</button>
+        <button class="key-btn" onclick="pressKey('9', event)">9</button>
+        <button id="del-btn" class="key-btn key-action key-hidden" onclick="clearCode(event)">מחק</button>
+        <button class="key-btn" onclick="pressKey('0', event)">0</button>
+        <button id="submit-btn" class="key-btn key-action key-hidden" onclick="submitCode(event)">אישור</button>
+    </div>
+</div>
+
+<!-- כרטיס הצלחה -->
+<div class="card-container" id="card-success-popup">
+    <div class="emoji-header">🎉💖</div>
+    <h1 id="success-popup-title" class="success-msg"></h1>
+</div>
+
+<!-- כרטיס 1: שאלה 1 -->
+<div class="card-container" id="card-1">
+    <div class="step-title">שאלה 1</div>
+    <div class="emoji-header">❤️ ❤️ ❤️</div>
+    <h1>חיים שלי, מוכנה לטו באב?</h1>
+    <div class="error-msg" id="run-error" style="font-size: 14px; color: #d81b60;"></div>
+    <div class="button-group" id="btn-group-1">
+        <button class="btn btn-yes" onclick="nextCard(2, event)">כן!! 😍</button>
+        <button class="btn btn-no" id="run-btn" onmouseenter="moveButton(event)" ontouchstart="moveButton(event)">לא 😭</button>
+    </div>
+</div>
+
+<!-- כרטיס 2: שאלה 2 -->
+<div class="card-container" id="card-2">
+    <div class="step-title">שאלה 2</div>
+    <div class="emoji-header">⏰ 🕒</div>
+    <h1>באיזה שעה את רוצה?</h1>
+    <div class="button-group">
+        <button class="btn btn-yes" onclick="selectOption('time', '19:00'); nextCard(3, event)">19:00 🕖</button>
+        <button class="btn btn-yes" onclick="selectOption('time', '20:00'); nextCard(3, event)">20:00 🕗</button>
+        <button class="btn btn-yes" onclick="selectOption('time', '21:00'); nextCard(3, event)">21:00 🕘</button>
+    </div>
+</div>
+
+<!-- כרטיס 3: שאלה 3 (עודכן עם המסעדות שבחרת) -->
+<div class="card-container" id="card-3">
+    <div class="step-title">שאלה 3</div>
+    <div class="emoji-header">🍕 🍷 🍝</div>
+    <h1>באיזו מסעדה נאכל?</h1>
+    <div class="button-group">
+        <button class="btn btn-yes" onclick="selectOption('food', 'פבריקה (Fabica)'); nextCard(4, event)">פבריקה 🍕</button>
+        <button class="btn btn-yes" onclick="selectOption('food', 'אוסטריה (Osteria)'); nextCard(4, event)">אוסטריה 🍝</button>
+        <button class="btn btn-yes" onclick="selectOption('food', 'מוצ\'ה (MUCHA)'); nextCard(4, event)">מוצ'ה 🍷</button>
+        <button class="btn btn-yes" onclick="selectOption('food', 'להלה (LaLa)'); nextCard(4, event)">להלה ✨</button>
+    </div>
+</div>
+
+<!-- כרטיס 4: שאלה 4 -->
+<div class="card-container" id="card-4">
+    <div class="step-title">שאלה 4</div>
+    <div class="emoji-header">💸 🤨</div>
+    <h1>רגע, את תשלמי גם?</h1>
+    <div class="error-msg" id="payment-error"></div>
+    <div class="button-group" id="payment-buttons">
+        <button class="btn btn-yes" onclick="handlePaymentClick(event)">ברור!!</button>
+        <button class="btn btn-yes" onclick="handlePaymentClick(event)">מן הסתם!!</button>
+    </div>
+</div>
+
+<!-- כרטיס 5: דף סיכום -->
+<div class="card-container" id="card-5">
+    <div class="step-title">סיכום הנתונים</div>
+    <div class="emoji-header">📋✨</div>
+    <h1>רגע לפני שסוגרים הכל...</h1>
+    <div class="summary-box">
+        <p>📅 תאריך: 28.7 יום שלישי</p>
+        <p>🕒 שעה: <span id="summary-time"></span></p>
+        <p>🍽️ מסעדה: <span id="summary-food"></span></p>
+        <p>💸 עלות עליך: 0 שקל</p>
+    </div>
+    <button class="btn btn-yes" style="width: 100%; background-color: #d81b60;" onclick="nextCard(6, event)">טוב הכל מושלם! קדימה ❤️</button>
+    <button class="btn btn-retry" onclick="resetAppToTime(event)">ניסיון חוזר ליתר ביטחון 🔄</button>
+</div>
+
+<!-- כרטיס 6: סיום ושליחה בוואטסאפ -->
+<div class="card-container" id="card-6">
+    <div class="step-title">סיום</div>
+    <div class="emoji-header">💖 🎉</div>
+    <h1>מושלם! קבענו!</h1>
+    <p>אני כבר מחכה בקוצר רוח... אוהב המון!</p>
+    <button class="btn btn-final" onclick="sendWhatsApp(event)">שלחי לי את הבחירות שלך! ❤️</button>
+</div>
+
+<script>
+    const MY_PHONE_NUMBER = "972542831630";
+    const MY_NAME = "שושווו";
+    const CORRECT_CODE = "230626";
+
+    let enteredCode = "";
+    let hasFailedOnce = false;
+    let answers = { time: "", food: "" };
+    let paymentClicks = 0;
+    let runClicks = 0;
+
+    function pressKey(num, event) {
+        createHearts(event);
+        if (enteredCode.length < 6) {
+            enteredCode += num;
+            updateCodeDisplay();
+        }
+    }
+
+    function clearCode(event) {
+        createHearts(event);
+        enteredCode = "";
+        updateCodeDisplay();
+        document.getElementById('code-error').textContent = "";
+    }
+
+    function updateCodeDisplay() {
+        for (let i = 0; i < 6; i++) {
+            const box = document.getElementById(`b${i+1}`);
+            box.textContent = enteredCode[i] ? '•' : '';
+        }
+
+        const delBtn = document.getElementById('del-btn');
+        const submitBtn = document.getElementById('submit-btn');
+
+        if (enteredCode.length > 0) {
+            delBtn.classList.remove('key-hidden');
+            delBtn.classList.add('key-visible');
+        } else {
+            delBtn.classList.remove('key-visible');
+            delBtn.classList.add('key-hidden');
+        }
+
+        if (enteredCode.length === 6) {
+            submitBtn.classList.remove('key-hidden');
+            submitBtn.classList.add('key-visible');
+        } else {
+            submitBtn.classList.remove('key-visible');
+            submitBtn.classList.add('key-hidden');
+        }
+    }
+
+    function submitCode(event) {
+        createHearts(event);
+        const errorDiv = document.getElementById('code-error');
+        const card0 = document.getElementById('card-0');
+
+        if (enteredCode === CORRECT_CODE) {
+            errorDiv.textContent = "";
+            const successPopupTitle = document.getElementById('success-popup-title');
+            if (!hasFailedOnce) {
+                successPopupTitle.textContent = "פשיי גאונה שלי את 😍";
+            } else {
+                successPopupTitle.textContent = "בסדר העיקר שהצלחת ❤️";
+            }
+
+            card0.classList.remove('active');
+            const successPopup = document.getElementById('card-success-popup');
+            setTimeout(() => {
+                successPopup.classList.add('active');
+            }, 50);
+
+            setTimeout(() => {
+                successPopup.classList.remove('active');
+                setTimeout(() => {
+                    document.getElementById('card-1').classList.add('active');
+                }, 500);
+            }, 1500);
+
+        } else {
+            hasFailedOnce = true;
+            card0.classList.remove('shake');
+            void card0.offsetWidth;
+            card0.classList.add('shake');
+
+            const wrongMessages = [
+                "נו באמת, נועם... 🙄",
+                "ציפיתי ליותר ממך 😂",
+                "מאכזב מאוד, נסי שוב ❌",
+                "ברצינות? זה מה שבחרת? 🤦‍♂️",
+                "נו נו, אפילו דג חכם יותר 🐟"
+            ];
+            const randomMsg = wrongMessages[Math.floor(Math.random() * wrongMessages.length)];
+            errorDiv.textContent = randomMsg;
+
+            enteredCode = "";
+            updateCodeDisplay();
+        }
+    }
+
+    function createHearts(event) {
+        if (!event) return;
+        const btn = event.currentTarget;
+        const rect = btn.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const emojis = ['❤️', '💖', '💗', '💓', '✨'];
+
+        for (let i = 0; i < 7; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'click-heart';
+            heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+            heart.style.left = centerX + 'px';
+            heart.style.top = centerY + 'px';
+
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 40 + Math.random() * 60;
+            const dx = Math.cos(angle) * distance;
+            const dy = Math.sin(angle) * distance;
+
+            heart.style.setProperty('--dx', dx + 'px');
+            heart.style.setProperty('--dy', dy + 'px');
+
+            document.body.appendChild(heart);
+
+            setTimeout(() => {
+                heart.remove();
+            }, 600);
+        }
+    }
+
+    function nextCard(cardNumber, event) {
+        createHearts(event);
+
+        if (cardNumber === 5) {
+            document.getElementById('summary-time').textContent = answers.time;
+            document.getElementById('summary-food').textContent = answers.food;
+        }
+
+        setTimeout(() => {
+            document.querySelectorAll('.card-container').forEach(card => card.classList.remove('active'));
+            document.getElementById(`card-${cardNumber}`).classList.add('active');
+        }, 150);
+    }
+
+    function selectOption(category, choice) {
+        answers[category] = choice;
+    }
+
+    function resetAppToTime(event) {
+        createHearts(event);
+        answers = { time: "", food: "" };
+        paymentClicks = 0;
+
+        const thirdBtn = document.getElementById('third-option-btn');
+        if (thirdBtn) thirdBtn.remove();
+        document.getElementById('payment-error').textContent = "";
+
+        setTimeout(() => {
+            document.querySelectorAll('.card-container').forEach(card => card.classList.remove('active'));
+            document.getElementById('card-2').classList.add('active');
+        }, 150);
+    }
+
+    function handlePaymentClick(event) {
+        createHearts(event);
+        paymentClicks++;
+        const errorDiv = document.getElementById('payment-error');
+        const buttonGroup = document.getElementById('payment-buttons');
+        const card4 = document.getElementById('card-4');
+
+        card4.classList.remove('shake');
+        void card4.offsetWidth;
+        card4.classList.add('shake');
+
+        if (paymentClicks === 1) {
+            errorDiv.textContent = "שגיאת מערכת: האופציה הזו נדחתה אוטומטית.";
+        } else if (paymentClicks === 2) {
+            errorDiv.textContent = "שגיאה: הניסיון שלך לא צלח, נסי שוב.";
+        } else if (paymentClicks === 3) {
+            errorDiv.textContent = "";
+            if (!document.getElementById('third-option-btn')) {
+                const thirdBtn = document.createElement('button');
+                thirdBtn.id = 'third-option-btn';
+                thirdBtn.className = 'btn btn-yes';
+                thirdBtn.style.width = '100%';
+                thirdBtn.style.backgroundColor = '#d81b60';
+                thirdBtn.textContent = 'את חיה בסרט את לא משלמת שקל 👑';
+                thirdBtn.onclick = function(e) { nextCard(5, e); };
+                buttonGroup.appendChild(thirdBtn);
+            }
+        } else {
+            const funnyErrors = [
+                "די, נועם, מספיק לנסות לשלם!",
+                "נו באמת, תוותרי כבר!",
+                "חבל על המאמץ, זה פשוט לא יקרה 😌",
+                "למה את מתעקשת? אין מצב!"
+            ];
+            const randomMsg = funnyErrors[Math.floor(Math.random() * funnyErrors.length)];
+            errorDiv.textContent = randomMsg;
+        }
+    }
+
+    function sendWhatsApp(event) {
+        createHearts(event);
+
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#ff4d6d', '#ff758f', '#ffb3c1', '#ffffff']
+        });
+
+        setTimeout(() => {
+            const message = `${MY_NAME}!! החלטתי שבשעה ${answers.time} נלך לאכול ב${answers.food}! אני מחכה כל כךך`;
+            window.open(`https://wa.me/${MY_PHONE_NUMBER}?text=` + encodeURIComponent(message), '_blank');
+        }, 500);
+    }
+
+    const runBtn = document.getElementById('run-btn');
+    const runError = document.getElementById('run-error');
+
+    function moveButton(event) {
+        if (event) {
+            event.preventDefault();
+            createHearts(event);
+        }
+        runClicks++;
+
+        const warnings = [
+            "היי! לאן את מנסה ללחוץ בדיוק? 🤨",
+            "נועם את תקבלי מכות, תזהרי!",
+            "אני אפרק אותך אם תמשיכי לרדוף אחרי זה!",
+            "אין לך שום סיכוי תפסיקי לנסות לתפוס אותי 😂",
+            "נו באמת, תלחצי כבר על הכפתור הנכון! ❤️"
+        ];
+
+        runError.textContent = warnings[(runClicks - 1) % warnings.length];
+
+        const offsetX = (Math.random() < 0.5 ? 1 : -1) * (150 + Math.random() * 90);
+        const offsetY = (Math.random() < 0.5 ? 1 : -1) * (90 + Math.random() * 80);
+
+        runBtn.style.position = 'relative';
+        runBtn.style.left = offsetX + 'px';
+        runBtn.style.top = offsetY + 'px';
+    }
+
+    runBtn.addEventListener('mouseenter', moveButton);
+    runBtn.addEventListener('touchstart', moveButton);
+
+    const backgroundContainer = document.querySelector('.background-elements');
+
+    // 1. יצירת לבבות ברקע
+    for (let i = 0; i < 15; i++) {
+        const heart = document.createElement('div');
+        heart.classList.add('heart-bg');
+        heart.textContent = ['❤️', '💖', '💗', '💓'][Math.floor(Math.random() * 4)];
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.fontSize = (Math.random() * 15 + 15) + 'px';
+        heart.style.animationDelay = Math.random() * 10 + 's';
+        heart.style.animationDuration = (Math.random() * 5 + 8) + 's';
+        backgroundContainer.appendChild(heart);
+    }
+
+    // 2. יצירת בועות הודעות ברקע
+    const messageImages = ['src/bubble1.jpeg', 'src/bubble2.jpeg', 'src/bubble3.jpeg', 'src/bubble4.jpeg', 'src/bubble5.jpeg', 'src/bubble6.jpeg'];
+    for (let i = 0; i < 8; i++) {
+        const img = document.createElement('img');
+        img.classList.add('message-bubble-bg');
+        img.src = messageImages[Math.floor(Math.random() * messageImages.length)];
+        img.style.left = Math.random() * 80 + 'vw';
+        img.style.animationDelay = (Math.random() * 14) + 's';
+        img.style.animationDuration = (Math.random() * 5 + 11) + 's';
+        backgroundContainer.appendChild(img);
+    }
+
+    // 3. יצירת סטיקרים ברקע
+    const stickerImages = ['src/sticker1.jpeg', 'src/sticker2.jpeg', 'src/sticker3.jpeg', 'src/sticker4.jpeg', 'src/sticker5.jpeg', 'src/sticker6.jpeg', 'src/sticker7.jpeg'];
+    const shuffledStickers = [...stickerImages].sort(() => Math.random() - 0.5);
+
+    shuffledStickers.forEach((src, i) => {
+        const sticker = document.createElement('img');
+        sticker.classList.add('sticker-bg');
+        sticker.src = src;
+        sticker.style.left = Math.random() * 80 + 'vw';
+        sticker.style.animationDelay = (i * 2 + Math.random() * 2) + 's';
+        sticker.style.animationDuration = (Math.random() * 4 + 11) + 's';
+        backgroundContainer.appendChild(sticker);
+    });
+
+    const canvas = document.getElementById('intro-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const particles = [];
+    const numParticles = 950;
+    let timeVar = 0;
+    let animationFinished = false;
+    let photoShown = false;
+
+    function drawVectorHeart(x, y, size, color) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(x, y);
+        ctx.moveTo(0, -size / 4);
+        ctx.bezierCurveTo(size / 2, -size, size, -size / 3, 0, size);
+        ctx.bezierCurveTo(-size, -size / 3, -size / 2, -size, 0, -size / 4);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.restore();
+    }
+
+    function getHeartPoint(t) {
+        const x = 16 * Math.pow(Math.sin(t), 3);
+        const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+        return { x: x, y: -y };
+    }
+
+    for (let i = 0; i < numParticles; i++) {
+        const t = Math.PI * 2 * (i / 180);
+        const point = getHeartPoint(t);
+        const r = 0.8 + Math.random() * 0.25;
+        const scale = Math.min(canvas.width, canvas.height) / 28;
+
+        const targetX = point.x * scale * r;
+        const targetY = point.y * scale * r;
+        const targetZ = (Math.random() - 0.5) * 60;
+
+        const pinks = ['#ff4d6d', '#ff758f', '#ff8fa3', '#ffb3c1', '#ff0a54'];
+        const randomColor = pinks[Math.floor(Math.random() * pinks.length)];
+
+        particles.push({
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            baseX: targetX,
+            baseY: targetY,
+            baseZ: targetZ,
+            currentZ: 0,
+            size: Math.random() * 1.5 + 2.2,
+            color: randomColor,
+            speed: 0.035,
+            delay: i * 0.15,
+            arrived: false
+        });
+    }
+
+    let frame = 0;
+    let holdTimer = 0;
+
+    function drawIntro() {
+        ctx.fillStyle = '#050505';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        frame++;
+        timeVar += 0.01;
+
+        let angleY = Math.sin(timeVar) * 0.2;
+
+        particles.sort((a, b) => b.currentZ - a.currentZ);
+
+        let allArrived = true;
+
+        particles.forEach(p => {
+            if (frame > p.delay) {
+                const cosY = Math.cos(angleY);
+                const sinY = Math.sin(angleY);
+
+                const rotatedX = p.baseX * cosY - p.baseZ * sinY;
+                const rotatedZ = p.baseX * sinY + p.baseZ * cosY;
+
+                const finalTargetX = canvas.width / 2 + rotatedX;
+                const finalTargetY = canvas.height / 2 + p.baseY;
+
+                p.currentZ = rotatedZ;
+
+                p.x += (finalTargetX - p.x) * p.speed;
+                p.y += (finalTargetY - p.y) * p.speed;
+
+                if (Math.abs(finalTargetX - p.x) < 2.5 && Math.abs(finalTargetY - p.y) < 2.5) {
+                    p.arrived = true;
+                } else {
+                    allArrived = false;
+                }
+
+                const perspectiveScale = (p.currentZ + 300) / 300;
+                const currentSize = Math.max(p.size * perspectiveScale, 1.2);
+
+                drawVectorHeart(p.x, p.y, currentSize, p.color);
+            } else {
+                allArrived = false;
+            }
+        });
+
+        if (allArrived && !photoShown) {
+            photoShown = true;
+            document.getElementById('photo-container').classList.add('show');
+        }
+
+        if (allArrived && !animationFinished) {
+            holdTimer++;
+            if (holdTimer > 160) {
+                animationFinished = timeVar = true;
+                const overlay = document.getElementById('intro-overlay');
+                overlay.style.opacity = '0';
+                document.getElementById('photo-container').style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.visibility = 'hidden';
+                }, 800);
+            }
+        }
+
+        requestAnimationFrame(drawIntro);
+    }
+    drawIntro();
+</script>
+</body>
+</html>
